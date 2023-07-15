@@ -28,7 +28,7 @@ const addPlanetsIntoDOM = async () => {
           <img src="${data.imgSrc.img}" alt="${data.imgDescription}"/>
           <h1>${data.name}</h1>
         </div>
-        <div">
+        <div>
           <p>${data.description}</p>
         </div>
       </div>
