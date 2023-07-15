@@ -59,7 +59,7 @@ h1 {
 .filter-container {
     position: fixed;
     margin-top: 20px;
-    width: 70vw;
+    width: 84%;
     max-width: 800px;
 }
 
