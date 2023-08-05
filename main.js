@@ -15,13 +15,6 @@ const getPlanets = async () => {
         headers: {
           "X-RapidAPI-Key": `${apiKey}`,
           "X-RapidAPI-Host": "planets-info-by-newbapi.p.rapidapi.com",
-          "source": "/key.js",
-          "headers": [
-            {
-              "key": "Content-Type",
-              "value": "application/javascript"
-            }
-          ]
         },
       }
     );
