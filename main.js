@@ -1,62 +1,93 @@
+import { apiKey } from "./key.js";
+
 const planetContainer = document.querySelector("#planets-container");
 const filterInput = document.querySelector("#filter");
 const planetNotFound = document.querySelector(".not-found");
 
+planetNotFound.style.display = "none";
+
 const getPlanets = async () => {
-  const response = await fetch(
-    `https://planets-info-by-newbapi.p.rapidapi.com/api/v1/planets/`,
-    {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": "caeb637140mshdda52c75192f919p1abe7fjsnbbcef2e106a0",
-        "X-RapidAPI-Host": "planets-info-by-newbapi.p.rapidapi.com",
-      },
+  try {
+    const response = await fetch(
+      `https://planets-info-by-newbapi.p.rapidapi.com/api/v1/planets/`,
+      {
+        method: "GET",
+        headers: {
+          "X-RapidAPI-Key": `${apiKey}`,
+          "X-RapidAPI-Host": "planets-info-by-newbapi.p.rapidapi.com",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch");
     }
-  );
-  return await response.json();
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+const createPlanetCard = (data) => {
+  return `
+  <div class="card-container">
+    <div class="card-title">
+      <img src="${data.imgSrc.img}" alt="${data.imgDescription}"/>
+      <h1>${data.name}</h1>
+    </div>
+    <div>
+      <p>${data.description}</p>
+    </div>
+  </div>
+`;
 };
 
 const addPlanetsIntoDOM = async () => {
-  const planets = await getPlanets();
-  console.log(getPlanets());
-  const planetsTemplate = planets
-    .map(
-      (data) =>
-        `
-      <div class="card-container">
-        <div class="card-title">
-          <img src="${data.imgSrc.img}" alt="${data.imgDescription}"/>
-          <h1>${data.name}</h1>
-        </div>
-        <div>
-          <p>${data.description}</p>
-        </div>
-      </div>
-  `
-    )
-    .join("");
-  planetContainer.innerHTML += planetsTemplate;
+  try {
+    const planets = await getPlanets();
+    const planetsToShow = planets.slice(0, 8);
+
+    const planetsTemplate = planetsToShow.map(createPlanetCard).join("");
+
+    planetContainer.innerHTML += planetsTemplate;
+
+    planetNotFound.style.display =
+      planetsToShow.length === 0 ? "block" : "none";
+  } catch (error) {
+    console.error(error);
+  }
 };
 addPlanetsIntoDOM();
 
-const showPlanetIfMatchInputValue = (inputValue) => (card) => {
-  const planetName = card
-    .querySelector(".card-title")
-    .textContent.toLowerCase();
-  const cardContainerInputValues = planetName.includes(inputValue);
+let timeoutInput;
 
-  if (cardContainerInputValues) {
-    card.style.display = "flex";
-    return;
-  }
-  card.style.display = "none";
-
-};
-
-const handleInputValue = () => {
+const handleInputValue = (event) => {
   const inputValue = event.target.value.toLowerCase();
   const cards = document.querySelectorAll(".card-container");
-  cards.forEach(showPlanetIfMatchInputValue(inputValue));
+  let foundMatchingPlanet = false;
+
+  cards.forEach((card) => {
+    const planetName = card
+      .querySelector(".card-title")
+      .textContent.toLowerCase();
+    const cardContainerInputValues = planetName.includes(inputValue);
+
+    if (cardContainerInputValues) {
+      card.style.display = "flex";
+      foundMatchingPlanet = true;
+    } else {
+      card.style.display = "none";
+    }
+  });
+
+  if (!foundMatchingPlanet) {
+    planetNotFound.style.display = "block";
+  } else {
+    planetNotFound.style.display = "none";
+  }
 };
 
-filterInput.addEventListener("input", handleInputValue);
+filterInput.addEventListener("input", (event) => {
+  clearTimeout(timeoutInput);
+  timeoutInput = setTimeout(handleInputValue(event), 300);
+});
